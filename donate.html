@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>فرز التبرعات — مختبر الأزياء</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Kufi+Arabic:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .layout { display: grid; grid-template-columns: 330px 1fr; gap: 20px; align-items: start; margin-top: 22px; }
+  .side { position: sticky; top: 84px; display: grid; gap: 16px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; padding: 14px 20px; }
+  .count-row { display: grid; grid-template-columns: 26px 1fr 34px; gap: 8px; align-items: center; font-size: .92rem; }
+  .count-row .track { height: 8px; border-radius: 99px; background: rgba(255,255,255,.1); overflow: hidden; }
+  .count-row .fill { height: 100%; border-radius: 99px; }
+  .count-row b { text-align: left; direction: ltr; font-variant-numeric: tabular-nums; }
+  .bin { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.09); }
+  .bin:last-child { border: 0; }
+  .bin i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: 8px; }
+  .bin small { display: block; color: var(--faint); line-height: 1.4; }
+  .empty { padding: 40px 20px; text-align: center; color: var(--mute); }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .side { position: static; } }
+  @media print {
+    .bg, .topbar, .drop, .toolbar, .btn, .item .x, .item select, .toast { display: none !important; }
+    body { background: #fff; color: #000; } .glass { background: #fff; border-color: #bbb; box-shadow: none; backdrop-filter: none; }
+    .muted, .small { color: #444; }
+  }
+</style>
+</head>
+<body>
+<header id="nav"></header>
+<main class="wrap">
+  <div class="page-head">
+    <h1>فرز التبرعات</h1>
+    <p>الجمعيات تستلم أكياساً مختلطة من الملابس. صوّر القطع، فيصنّفها النموذج ويعدّها لك، وما لا يتأكد منه يعلّمه للمراجعة اليدوية.</p>
+  </div>
+
+  <div class="toolbar glass">
+    <label class="row">خلفية الصورة
+      <select id="mode">
+        <option value="auto">تلقائي (إزالة الخلفية)</option>
+        <option value="invert">قطعة داكنة على خلفية فاتحة</option>
+        <option value="plain">قطعة فاتحة على خلفية سوداء</option>
+      </select>
+    </label>
+    <label class="row">حدّ المراجعة
+      <input type="range" id="thr" min="40" max="95" value="70" step="5" style="width:130px">
+      <b id="thrVal" dir="ltr">70%</b>
+    </label>
+    <label class="row"><input type="checkbox" id="showModel"> أرني ما يراه النموذج</label>
+  </div>
+
+  <div class="layout">
+    <aside class="side">
+      <div class="glass pad">
+        <h3>الإجمالي</h3>
+        <div class="grid g2" style="gap:10px">
+          <div><b id="total" style="font-family:var(--font-head);font-size:2rem">0</b><div class="small muted">قطعة</div></div>
+          <div><b id="review" style="font-family:var(--font-head);font-size:2rem;color:var(--amber)">0</b><div class="small muted">تحتاج مراجعة</div></div>
+        </div>
+      </div>
+      <div class="glass pad"><h3>العدّ حسب الفئة</h3><div id="counts" class="bars" style="gap:10px"></div></div>
+      <div class="glass pad"><h3>أكياس الفرز المقترحة</h3><div id="bins"></div></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <button class="btn primary" id="csv" type="button" disabled>تصدير CSV</button>
+        <button class="btn" id="print" type="button" disabled>طباعة الملخص</button>
+        <button class="btn danger" id="clear" type="button" disabled>مسح الكل</button>
+      </div>
+    </aside>
+
+    <div>
+      <div class="drop glass" id="drop">
+        <h3>اسحب صور الملابس هنا</h3>
+        <p class="muted small" style="margin:0 0 14px">صورة واحدة أو عشرات الصور دفعة واحدة. الأفضل قطعة واحدة في كل صورة.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <label class="btn primary" for="pick" style="cursor:pointer">اختر صوراً</label>
+          <label class="btn" for="cam" style="cursor:pointer">التقط صورة</label>
+          <button class="btn" id="demo" type="button">جرّب بعيّنات جاهزة</button>
+        </div>
+        <input type="file" id="pick" accept="image/*" multiple hidden>
+        <input type="file" id="cam" accept="image/*" capture="environment" hidden>
+      </div>
+      <div id="empty" class="empty">لم تُضف أي قطعة بعد.</div>
+      <div id="items" class="items" style="margin-top:16px"></div>
+    </div>
+  </div>
+  <footer class="foot">الصور تُعالَج داخل متصفحك ولا تُرفع إلى أي مكان.</footer>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/common.js"></script>
+<script src="js/donate.js"></script>
+</body>
+</html>

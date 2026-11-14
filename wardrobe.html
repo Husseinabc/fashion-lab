@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>خزانتي — مختبر الأزياء</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Kufi+Arabic:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; margin-top: 22px; }
+  .side { position: sticky; top: 84px; display: grid; gap: 16px; }
+  .addbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 16px 20px; }
+  .addbar .grow { flex: 1; }
+  .need { display: grid; gap: 4px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.09); }
+  .need:last-child { border: 0; }
+  .need .top { display: flex; justify-content: space-between; gap: 8px; }
+  .need .top b { direction: ltr; font-variant-numeric: tabular-nums; }
+  .need .msg { font-size: .85rem; color: var(--mute); }
+  .look { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 8px; margin-top: 12px; }
+  .look figure { margin: 0; text-align: center; font-size: .78rem; color: var(--mute); }
+  .look img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); display: block; margin-bottom: 3px; }
+  .empty { padding: 44px 20px; text-align: center; color: var(--mute); }
+  @media (max-width: 960px) { .layout { grid-template-columns: 1fr; } .side { position: static; } }
+</style>
+</head>
+<body>
+<header id="nav"></header>
+<main class="wrap">
+  <div class="page-head">
+    <h1>خزانتي</h1>
+    <p>صوّر ملابسك مرة واحدة، فتُصنَّف وتُحفظ في هذا المتصفح فقط. ثم شاهد ما ينقص خزانتك واطلب إطلالة من قطعك.</p>
+  </div>
+
+  <div class="addbar glass">
+    <label class="btn primary" for="pick" style="cursor:pointer">أضف صوراً</label>
+    <label class="btn" for="cam" style="cursor:pointer">التقط صورة</label>
+    <button class="btn" id="demo" type="button">عيّنات جاهزة</button>
+    <span class="grow"></span>
+    <label class="row">الخلفية
+      <select id="mode">
+        <option value="auto">تلقائي</option>
+        <option value="invert">قطعة داكنة على خلفية فاتحة</option>
+        <option value="plain">قطعة فاتحة على خلفية سوداء</option>
+      </select>
+    </label>
+    <input type="file" id="pick" accept="image/*" multiple hidden>
+    <input type="file" id="cam" accept="image/*" capture="environment" hidden>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div class="chips" id="filters" role="group" aria-label="تصفية حسب المجموعة"></div>
+      <div id="empty" class="empty glass" style="margin-top:14px">خزانتك فارغة. أضف صور قطعك لتبدأ.</div>
+      <div id="items" class="items" style="margin-top:14px"></div>
+    </div>
+
+    <aside class="side">
+      <div class="glass pad">
+        <h3>ما ينقص خزانتك</h3>
+        <div id="needs"></div>
+        <p class="small muted" style="margin:10px 0 0">الأعداد المرجعية تقريبية لخزانة يومية متوازنة، وليست قاعدة ثابتة.</p>
+      </div>
+      <div class="glass pad">
+        <h3>إطلالة اليوم</h3>
+        <button class="btn primary" id="outfit" type="button">اقترح إطلالة</button>
+        <div id="look" aria-live="polite"></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <button class="btn" id="export" type="button" disabled>تصدير نسخة</button>
+        <label class="btn" for="import" style="cursor:pointer">استيراد نسخة</label>
+        <input type="file" id="import" accept="application/json" hidden>
+        <button class="btn danger" id="clear" type="button" disabled>مسح الخزانة</button>
+      </div>
+    </aside>
+  </div>
+  <footer class="foot">بياناتك محفوظة في متصفحك فقط (localStorage)، ولا تُرسل لأي خادم.</footer>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/common.js"></script>
+<script src="js/wardrobe.js"></script>
+</body>
+</html>

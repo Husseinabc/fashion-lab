@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مختبر الأزياء — تعرّف على الملابس بالذكاء الاصطناعي</title>
+<meta name="description" content="تطبيق ويب يشغّل نموذج CNN مدرَّب على Fashion-MNIST داخل المتصفح لتصنيف الملابس.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Kufi+Arabic:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .hero { display: grid; grid-template-columns: 1.15fr 1fr; gap: 36px; align-items: center; padding: 56px 0 8px; }
+  .hero p.lead { font-size: 1.15rem; color: var(--mute); max-width: 46ch; }
+  .hero .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+  .live { padding: 22px; display: grid; gap: 16px; }
+  .live .screen { display: grid; grid-template-columns: 168px 1fr; gap: 18px; align-items: center; }
+  .live canvas { width: 168px; height: 168px; border-radius: 16px; background: #000; image-rendering: pixelated; border: 1px solid var(--line); }
+  .live .meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .verdict { font-weight: 600; }
+  .verdict.ok { color: var(--mint); } .verdict.bad { color: var(--bad); }
+  .tools a.card { padding: 22px; text-decoration: none; display: grid; gap: 6px; align-content: start; transition: transform .15s, border-color .15s; border-top: 3px solid var(--c); }
+  .tools a.card:hover { transform: translateY(-3px); border-color: var(--c); }
+  .tools .emoji { font-size: 1.7rem; line-height: 1; }
+  .tools h3 { margin: 6px 0 0; }
+  .tools p { margin: 0; color: var(--mute); font-size: .95rem; }
+  ol.flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; counter-reset: s; }
+  ol.flow li { padding: 18px 20px; counter-increment: s; position: relative; }
+  ol.flow li::before { content: counter(s); position: absolute; left: 16px; top: 12px; font-family: var(--font-head); font-size: 1.7rem; color: rgba(255,255,255,.22); }
+  ol.flow b { display: block; font-family: var(--font-head); margin-bottom: 2px; }
+  ol.flow span { color: var(--mute); font-size: .92rem; }
+  @media (max-width: 860px) { .hero { grid-template-columns: 1fr; padding-top: 32px; } ol.flow { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 520px) { ol.flow { grid-template-columns: 1fr; } .live .screen { grid-template-columns: 1fr; justify-items: center; } }
+</style>
+</head>
+<body>
+<header id="nav"></header>
+<main class="wrap">
+
+  <div class="hero">
+    <div>
+      <h1>اعرف نوع القطعة من صورتها، والنموذج يعمل داخل متصفحك</h1>
+      <p class="lead">شبكة عصبية التفافية (CNN) دُرّبت على 60,000 صورة ملابس. تصنّف الصورة في عشر فئات بدون سيرفر، وصورك لا تغادر جهازك.</p>
+      <div class="cta">
+        <a class="btn primary" href="challenge.html">جرّب بالرسم</a>
+        <a class="btn" href="donate.html">صنّف صور ملابس</a>
+        <a class="btn" href="lab.html">شاهد أداء النموذج</a>
+      </div>
+    </div>
+
+    <div class="live glass" aria-live="polite">
+      <div class="screen">
+        <canvas id="demoCanvas" width="28" height="28" aria-label="صورة من بيانات الاختبار بحجم 28×28"></canvas>
+        <div id="demoBars" class="loading">جارٍ تحميل النموذج…</div>
+      </div>
+      <div class="meta">
+        <span id="demoVerdict" class="verdict"></span>
+        <button class="btn" id="demoNext" type="button">عيّنة أخرى</button>
+      </div>
+      <p class="small muted" style="margin:0" id="demoNote">هذه صور حقيقية من بيانات الاختبار، والنموذج لم يرَها أثناء التدريب.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="grid g4" id="stats"></div>
+  </section>
+
+  <section class="tools">
+    <h2>أربع طرق لاستخدام النموذج</h2>
+    <div class="grid g4" style="margin-top:18px">
+      <a class="card glass" href="donate.html" style="--c:#b8a4ff">
+        <span class="emoji">📦</span><h3>فرز التبرعات</h3>
+        <p>صوّر عشرات القطع دفعة واحدة، وخذ عدّاً لكل فئة وملف CSV جاهزاً.</p>
+      </a>
+      <a class="card glass" href="wardrobe.html" style="--c:#7ef0d0">
+        <span class="emoji">🧺</span><h3>خزانتي</h3>
+        <p>صنّف ملابسك واحفظها في متصفحك، وشاهد ما ينقص خزانتك واقترح إطلالة.</p>
+      </a>
+      <a class="card glass" href="challenge.html" style="--c:#ff9cc0">
+        <span class="emoji">✏️</span><h3>تحدَّ النموذج</h3>
+        <p>ارسم قطعة بيدك وانظر كيف يخمّنها، أو العب خمس جولات.</p>
+      </a>
+      <a class="card glass" href="lab.html" style="--c:#ffd08a">
+        <span class="emoji">🔬</span><h3>مختبر النموذج</h3>
+        <p>الدقة ومصفوفة الالتباس وأين يخطئ النموذج، مع تجربة على 200 صورة.</p>
+      </a>
+    </div>
+  </section>
+
+  <section>
+    <h2>من الدفتر إلى الموقع</h2>
+    <p class="muted" style="max-width:62ch">هذا هو مسار المشروع كاملاً، من البيانات حتى النشر.</p>
+    <ol class="flow" style="margin-top:16px">
+      <li class="glass"><b>البيانات</b><span>Fashion-MNIST: 70,000 صورة رمادية 28×28 في عشر فئات.</span></li>
+      <li class="glass"><b>التدريب</b><span>CNN بكتلتين تلافيفيتين، عشر حقب على Google Colab.</span></li>
+      <li class="glass"><b>الحفظ</b><span>حفظ النموذج المدرَّب في ملف Keras واحد بعد التقييم.</span></li>
+      <li class="glass"><b>التصدير</b><span>استخراج الأوزان إلى ملف JSON يقرأه المتصفح.</span></li>
+      <li class="glass"><b>التطبيق</b><span>محرك استدلال بجافاسكربت يعيد حساب الطبقات داخل الصفحة.</span></li>
+      <li class="glass"><b>النشر</b><span>رفع الملفات على GitHub Pages ليصبح للموقع رابط عام.</span></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="note"><b>حدود النموذج:</b> دُرّب على صور رمادية صغيرة لقطعة واحدة على خلفية سوداء. لذلك تجهّز الصفحات صورتك تلقائياً (إزالة الخلفية وقص القطعة)، لكن الصور المزدحمة أو القطع التي تشبه خلفيتها قد تعطي نتائج أضعف. النموذج يخلط خصوصاً بين القميص والتي شيرت والبلوفر والمعطف.</div>
+  </section>
+
+  <footer class="foot">يعمل بالكامل في المتصفح بدون سيرفر · مشروع تعليمي</footer>
+</main>
+
+<script src="js/engine.js"></script>
+<script src="js/common.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>

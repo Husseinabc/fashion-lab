@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تحدَّ النموذج — مختبر الأزياء</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Kufi+Arabic:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .stage { display: grid; grid-template-columns: minmax(0, 440px) 1fr; gap: 22px; align-items: start; margin-top: 22px; }
+  .board { padding: 16px; }
+  #pad { width: 100%; aspect-ratio: 1; display: block; border-radius: 16px; background: #000; touch-action: none; cursor: crosshair; border: 1px solid var(--line); }
+  .tools { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-top: 14px; }
+  .brain { padding: 22px; display: grid; gap: 18px; }
+  .brain .eye { display: grid; grid-template-columns: 112px 1fr; gap: 16px; align-items: center; }
+  #eye { width: 112px; height: 112px; image-rendering: pixelated; border-radius: 12px; background: #000; border: 1px solid var(--line); }
+  .target { display: flex; align-items: center; gap: 14px; }
+  .target .big { font-size: 2.6rem; line-height: 1; }
+  .target b { font-family: var(--font-head); font-size: 1.5rem; }
+  .rounds { display: flex; gap: 8px; flex-wrap: wrap; }
+  .rounds span { padding: 3px 12px; border-radius: 99px; background: rgba(255,255,255,.08); border: 1px solid var(--line); font-size: .88rem; }
+  .rounds span.ok { background: rgba(126,240,208,.2); border-color: var(--mint); }
+  .rounds span.no { background: rgba(255,138,155,.16); border-color: var(--bad); }
+  .rounds span.now { border-color: var(--lilac); }
+  .feedback { min-height: 3.2em; }
+  .feedback.ok { color: var(--mint); } .feedback.no { color: var(--bad); }
+  .score { font-family: var(--font-head); font-size: 2.4rem; }
+  @media (max-width: 860px) { .stage { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header id="nav"></header>
+<main class="wrap">
+  <div class="page-head">
+    <h1>تحدَّ النموذج</h1>
+    <p>ارسم قطعة ملابس بإصبعك أو بالماوس، وشاهد كيف يخمّنها النموذج في كل ضربة. أو العب خمس جولات وجرّب هل يفهم رسمك.</p>
+  </div>
+
+  <div class="chips" role="group" aria-label="الوضع">
+    <button class="chip" type="button" id="mFree" aria-pressed="true">رسم حر</button>
+    <button class="chip" type="button" id="mGame" aria-pressed="false">تحدي خمس جولات</button>
+  </div>
+
+  <div class="stage">
+    <div class="board glass">
+      <canvas id="pad" width="448" height="448" aria-label="لوحة الرسم"></canvas>
+      <div class="tools">
+        <button class="btn" id="undo" type="button">تراجع</button>
+        <button class="btn danger" id="clear" type="button">امسح</button>
+        <label class="row">حجم الفرشاة <input type="range" id="size" min="14" max="70" value="40" style="width:110px"></label>
+        <label class="row"><input type="checkbox" id="center" checked> تمركز تلقائي</label>
+      </div>
+    </div>
+
+    <div class="brain glass">
+      <div id="gameBox" hidden>
+        <div class="target"><span class="big" id="tEmoji"></span><div><div class="small muted" id="tRound"></div><b id="tName"></b></div></div>
+        <div class="rounds" id="rounds" style="margin-top:12px"></div>
+        <p class="feedback" id="feedback" aria-live="polite" style="margin:12px 0 0"></p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn primary" id="confirm" type="button">أكّد الرسم</button>
+          <button class="btn" id="skip" type="button">تخطَّ الجولة</button>
+          <button class="btn" id="next" type="button" hidden>الجولة التالية</button>
+        </div>
+      </div>
+      <div id="endBox" hidden>
+        <div class="small muted">نتيجتك</div>
+        <div class="score" id="score"></div>
+        <p class="muted" id="endMsg"></p>
+        <button class="btn primary" id="again" type="button">العب مرة أخرى</button>
+      </div>
+
+      <div class="eye">
+        <canvas id="eye" width="28" height="28" aria-label="ما يراه النموذج"></canvas>
+        <div><b>ما يراه النموذج</b><div class="small muted">رسمك بعد تصغيره إلى 28×28 بكسل.</div></div>
+      </div>
+      <div id="bars"><span class="muted">ارسم شيئاً لتبدأ.</span></div>
+      <div class="note">نصيحة: النموذج تدرّب على قطع <b>ممتلئة</b> وليست خطوطاً. ظلّل الشكل بفرشاة سميكة، وارسم القطعة من الأمام ومن الجنب كما في الصور.</div>
+    </div>
+  </div>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/common.js"></script>
+<script src="js/challenge.js"></script>
+</body>
+</html>

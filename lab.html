@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مختبر النموذج — مختبر الأزياء</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Kufi+Arabic:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .chart { padding: 18px 18px 10px; }
+  .chart svg { width: 100%; height: auto; display: block; direction: ltr; }
+  .legend { display: flex; gap: 16px; font-size: .88rem; color: var(--mute); margin-top: 4px; }
+  .legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; margin-inline-end: 6px; vertical-align: middle; }
+  ol.arch { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; counter-reset: a; }
+  ol.arch li { padding: 12px 16px; counter-increment: a; position: relative; }
+  ol.arch li.skip { opacity: .55; border-style: dashed; }
+  ol.arch li b { display: block; font-size: .95rem; }
+  ol.arch li span { display: block; color: var(--mute); font-size: .84rem; direction: ltr; text-align: right; }
+  ol.arch li::before { content: counter(a); position: absolute; left: 12px; top: 8px; font-family: var(--font-head); color: rgba(255,255,255,.22); }
+  .cm-wrap { overflow-x: auto; padding: 18px; }
+  table.cm { border-collapse: separate; border-spacing: 3px; min-width: 640px; }
+  table.cm th { font-size: .78rem; font-weight: 500; color: var(--mute); padding: 4px; text-align: center; border: 0; white-space: nowrap; }
+  table.cm th.rowh { text-align: right; padding-inline-end: 10px; }
+  table.cm td { text-align: center; padding: 0; height: 44px; min-width: 44px; border-radius: 8px; border: 0; font-size: .8rem; font-variant-numeric: tabular-nums; }
+  .f1bar { display: inline-block; height: 8px; border-radius: 99px; background: var(--mint); vertical-align: middle; }
+  .pairs { display: grid; gap: 8px; }
+  .pair { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; border-radius: 14px; background: rgba(255,255,255,.05); }
+  .pair b { direction: ltr; font-variant-numeric: tabular-nums; color: var(--rose); }
+  .explorer { display: grid; grid-template-columns: 1fr 320px; gap: 18px; align-items: start; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: 8px; padding: 14px; max-height: 520px; overflow-y: auto; }
+  .tiles button { padding: 0; border: 2px solid transparent; border-radius: 10px; background: #000; cursor: pointer; overflow: hidden; line-height: 0; }
+  .tiles button canvas { width: 100%; height: auto; image-rendering: pixelated; }
+  .tiles button.err { border-color: var(--bad); }
+  .tiles button[aria-pressed="true"] { border-color: var(--lilac); box-shadow: 0 0 0 2px rgba(184,164,255,.35); }
+  .detail { padding: 20px; position: sticky; top: 84px; display: grid; gap: 14px; }
+  .detail canvas { width: 168px; height: 168px; border-radius: 14px; image-rendering: pixelated; background: #000; border: 1px solid var(--line); }
+  .badge { display: inline-block; padding: 3px 14px; border-radius: 99px; font-size: .9rem; background: rgba(126,240,208,.16); border: 1px solid var(--mint); color: var(--mint); }
+  @media (max-width: 900px) { .explorer { grid-template-columns: 1fr; } .detail { position: static; } }
+</style>
+</head>
+<body>
+<header id="nav"></header>
+<main class="wrap">
+  <div class="page-head">
+    <h1>مختبر النموذج</h1>
+    <p>كيف يُقاس نموذج التصنيف؟ هنا الدقة، ومنحنيات التدريب، وبنية الشبكة، وأين يخطئ النموذج بالضبط.</p>
+  </div>
+
+  <section style="margin-top:20px"><div class="grid g4" id="stats"><div class="loading">جارٍ التحميل…</div></div></section>
+
+  <section>
+    <h2>منحنيات التدريب</h2>
+    <p class="muted" style="max-width:66ch">القيم من سجل الحقب العشر في الدفتر. الرقم 92.5% هو دقة <b>التدريب</b> في آخر حقبة، أما دقة <b>الاختبار</b> على صور لم يرَها النموذج فهي 91.54%. الفرق الصغير بينهما علامة على تعميم جيد.</p>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="glass chart"><h3>الدقة</h3><div id="chAcc"></div><div class="legend"><span><i style="background:var(--lilac)"></i>تدريب</span><span><i style="background:var(--mint)"></i>اختبار</span></div></div>
+      <div class="glass chart"><h3>الخسارة</h3><div id="chLoss"></div><div class="legend"><span><i style="background:var(--lilac)"></i>تدريب</span><span><i style="background:var(--mint)"></i>اختبار</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>بنية الشبكة</h2>
+    <p class="muted" style="max-width:66ch">الصورة تمر على هذه الطبقات بالترتيب. الطبقات المنقّطة تعمل أثناء التدريب فقط لتقليل الحفظ الأعمى، ولا تظهر عند التصنيف.</p>
+    <ol class="arch" id="arch" style="margin-top:14px"></ol>
+  </section>
+
+  <section>
+    <h2>مصفوفة الالتباس</h2>
+    <p class="muted" style="max-width:66ch">كل صف هو الفئة الحقيقية، وكل عمود ما توقعه النموذج. المربعات الخضراء على القطر هي التوقعات الصحيحة، والوردية هي الأخطاء. الأرقام من 10,000 صورة اختبار.</p>
+    <div class="glass cm-wrap" style="margin-top:14px"><table class="cm" id="cm"></table></div>
+  </section>
+
+  <section>
+    <div class="grid g2" style="align-items:start">
+      <div>
+        <h2>الأداء لكل فئة</h2>
+        <div class="glass pad table-wrap"><table id="perClass"></table></div>
+      </div>
+      <div>
+        <h2>أكثر الأخطاء تكراراً</h2>
+        <div class="pairs" id="pairs"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>جرّب على 200 صورة اختبار</h2>
+    <p class="muted" style="max-width:66ch">20 صورة من كل فئة. التوقعات هنا يحسبها محرك جافاسكربت في صفحتك، وتُقارَن بتوقعات Keras الأصلية للتأكد أن التصدير لم يغيّر شيئاً.</p>
+    <p><span class="badge" id="selfcheck">جارٍ الفحص…</span></p>
+    <div class="chips" id="exFilters" style="margin-bottom:12px"></div>
+    <div class="explorer">
+      <div class="glass tiles" id="tiles"></div>
+      <div class="glass detail" id="detail"><span class="muted">اختر صورة لترى توقعات النموذج بالتفصيل.</span></div>
+    </div>
+  </section>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/common.js"></script>
+<script src="js/lab.js"></script>
+</body>
+</html>
